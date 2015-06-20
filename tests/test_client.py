@@ -2,15 +2,15 @@
 # -*- coding: utf-8 -*-
 
 """
-test_modpypes
-----------------------------------
+test_client
+-----------
 
-Tests for `modpypes` module.
+Tests for `modpypes.client` module.
 """
 
 import unittest
 
-from modpypes import modpypes
+from modpypes import client
 
 
 class TestModpypes(unittest.TestCase):

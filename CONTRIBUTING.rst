@@ -106,6 +106,8 @@ Before you submit a pull request, check that it meets these guidelines:
 Tips
 ----
 
-To run a subset of tests::
+To test the packet encoding and decoding, run the test_pdu subset of tests::
 
-    $ python -m unittest tests.test_modpypes
+    $ python -m unittest tests.test_pdu
+
+And similarly for the other modules in the package.
