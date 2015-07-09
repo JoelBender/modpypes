@@ -293,7 +293,11 @@ class String(_Struct):
     This class packs and unpacks a list of registers as a null terminated string.
     """
 
-    registerLength = 6
+    def __init__(self, registerLength=6):
+       if _debug: String._debug("__init__ %r", registerLength)
+
+       # save the length
+       self.registerLength = registerLength
 
     def pack(self, value):
         if _debug: String._debug("pack %r", value)
@@ -306,6 +310,35 @@ class String(_Struct):
         for reg in registers:
             octets.append(reg >> 8)
             octets.append(reg & 0xFF)
+
+        value = ''.join(chr(c) for c in octets)
+        value = value[:value.find('\x00')]
+        return value
+
+@class_debugging
+class BigEndianString(_Struct):
+
+    """
+    This class packs and unpacks a list of registers as a null terminated string.
+    """
+
+    def __init__(self, registerLength=6):
+       if _debug: String._debug("__init__ %r", registerLength)
+
+       # save the length
+       self.registerLength = registerLength
+
+    def pack(self, value):
+        if _debug: String._debug("pack %r", value)
+        raise NotImplementedError("packing strings is not implemeted")
+
+    def unpack(self, registers):
+        if _debug: String._debug("unpack %r", registers)
+
+        octets = []
+        for reg in registers:
+            octets.append(reg & 0xFF)
+            octets.append(reg >> 8)
 
         value = ''.join(chr(c) for c in octets)
         value = value[:value.find('\x00')]
@@ -327,6 +360,7 @@ ModbusStruct = {
     'be-udint': BigEndianUnsignedDoubleInt(),
     'be-real': BigEndianReal(),
     'str': String(),
+    'be-str': BigEndianString(),
     }
 
 #
