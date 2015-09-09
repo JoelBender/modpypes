@@ -65,7 +65,7 @@ class ConsoleClient(ConsoleCmd, Client):
         if _debug: ConsoleClient._debug("do_read %r", args)
 
         if (len(args) < 3):
-            print "address, unit and register required"
+            print("address, unit and register required")
             return
 
         # get the address and unit
@@ -93,7 +93,7 @@ class ConsoleClient(ConsoleCmd, Client):
             registerType = register // 100000
             register = register % 100000
         else:
-            print "5 or 6 digit addresses please"
+            print("5 or 6 digit addresses please")
             return
         if _debug: ConsoleClient._debug("    - registerType, register: %r, %r", registerType, register)
 
@@ -108,7 +108,7 @@ class ConsoleClient(ConsoleCmd, Client):
             # holding register
             req = ReadMultipleRegistersRequest(register - 1, rcount)
         else:
-            print "unsupported register type"
+            print("unsupported register type")
             return
 
         # set the destination
@@ -130,21 +130,21 @@ class ConsoleClient(ConsoleCmd, Client):
         if _debug: ConsoleClient._debug("confirmation %r", pdu)
 
         if isinstance(pdu, ExceptionResponse):
-            print ModbusException(pdu.exceptionCode)
+            print(ModbusException(pdu.exceptionCode))
 
         elif isinstance(pdu, ReadCoilsResponse):
-            print "  ::=", pdu.bits
+            print("  ::=" + str(pdu.bits))
 
         elif isinstance(pdu, ReadDiscreteInputsResponse):
-            print "  ::=", pdu.bits
+            print("  ::=" + str(pdu.bits))
 
         elif isinstance(pdu, ReadMultipleRegistersResponse):
-            print "  ::=", pdu.registers
+            print("  ::=" + str(pdu.registers))
 
             for dtype, codec in ModbusStruct.items():
                 try:
                     value = codec.unpack(pdu.registers)
-                    print "   ", dtype, "::=", value
+                    print("   " + dtype + " ::= " + str(value))
                 except Exception as err:
                     if _debug: ConsoleClient._debug("unpack exception %r: %r", codec, err)
 
@@ -175,8 +175,8 @@ def main():
 
         run()
 
-    except Exception, e:
-        _log.exception("an error has occurred: %s", e)
+    except Exception as err:
+        _log.exception("an error has occurred: %s" % (err,))
     finally:
         _log.debug("finally")
 

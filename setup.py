@@ -8,12 +8,6 @@ except ImportError:
     from distutils.core import setup
 
 
-with open('README.md') as readme_file:
-    readme = readme_file.read()
-
-with open('HISTORY.rst') as history_file:
-    history = history_file.read().replace('.. :changelog:', '')
-
 requirements = [
     'bacpypes'
 ]
@@ -24,9 +18,9 @@ test_requirements = [
 
 setup(
     name='modpypes',
-    version='0.2',
+    version='0.3',
     description="Python library for MODBUS based on BACpypes",
-    long_description=readme + '\n\n' + history,
+    long_description="See GitHub for more information",
     author="Joel Bender",
     author_email='joel@carrickbender.com',
     url='https://github.com/JoelBender/modpypes',

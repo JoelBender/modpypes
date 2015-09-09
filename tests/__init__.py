@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import test_pdu
-import test_app
-import test_client
+from . import test_pdu
+from . import test_app
+from . import test_client
