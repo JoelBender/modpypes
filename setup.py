@@ -18,7 +18,7 @@ test_requirements = [
 
 setup(
     name='modpypes',
-    version='0.3',
+    version='0.4',
     description="Python library for MODBUS based on BACpypes",
     long_description="See GitHub for more information",
     author="Joel Bender",
