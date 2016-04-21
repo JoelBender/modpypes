@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 
+import os
+import re
+
 try:
     from setuptools import setup
 except ImportError:
@@ -16,19 +19,24 @@ test_requirements = [
     # TODO: put package test requirements here
 ]
 
+# read in the __init__.py file, extract the metadata
+init_py = open(os.path.join('modpypes', '__init__.py')).read()
+metadata = dict(re.findall("__([a-z]+)__ = '([^']+)'", init_py))
+
 setup(
     name='modpypes',
-    version='0.4',
+    version=metadata['version'],
     description="Python library for MODBUS based on BACpypes",
     long_description="See GitHub for more information",
-    author="Joel Bender",
-    author_email='joel@carrickbender.com',
+    author=metadata['author'],
+    author_email=metadata['email'],
     url='https://github.com/JoelBender/modpypes',
     packages=[
         'modpypes',
     ],
-    package_dir={'modpypes':
-                 'modpypes'},
+    package_dir={
+        'modpypes': 'modpypes',
+        },
     include_package_data=True,
     install_requires=requirements,
     license="MIT",
