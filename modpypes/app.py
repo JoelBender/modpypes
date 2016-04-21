@@ -11,7 +11,7 @@ from bacpypes.debugging import class_debugging, ModuleLogger
 from bacpypes.comm import PDU, Client, Server, ServiceAccessPoint, bind
 from bacpypes.tcp import TCPClientDirector, TCPServerDirector, StreamToPacket
 
-from pdu import MPDU, request_types, response_types, ExceptionResponse
+from .pdu import MPDU, request_types, response_types, ExceptionResponse
 
 # some debugging
 _debug = 0

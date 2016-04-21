@@ -2,7 +2,7 @@
 
 __author__ = 'Joel Bender'
 __email__ = 'joel@carrickbender.com'
-__version__ = '0.2'
+__version__ = '0.2.1'
 
-import pdu
-import app
+from . import pdu
+from . import app
