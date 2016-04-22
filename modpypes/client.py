@@ -18,12 +18,12 @@ from bacpypes.consolelogging import ArgumentParser
 from bacpypes.comm import Client, bind
 from bacpypes.core import run
 
-from pdu import ExceptionResponse, \
+from .pdu import ExceptionResponse, \
     ReadCoilsRequest, ReadCoilsResponse, \
     ReadDiscreteInputsRequest, ReadDiscreteInputsResponse, \
     ReadMultipleRegistersRequest, ReadMultipleRegistersResponse, \
     ModbusStruct
-from app import ModbusClient, ModbusException
+from .app import ModbusClient, ModbusException
 
 # some debugging
 _debug = 0
