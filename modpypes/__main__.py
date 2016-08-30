@@ -22,8 +22,12 @@ from .pdu import ExceptionResponse, \
     ReadCoilsRequest, ReadCoilsResponse, \
     ReadDiscreteInputsRequest, ReadDiscreteInputsResponse, \
     ReadMultipleRegistersRequest, ReadMultipleRegistersResponse, \
+    ReadInputRegistersRequest, ReadInputRegistersResponse, \
+    WriteSingleCoilRequest, WriteSingleCoilResponse, \
+    WriteSingleRegisterRequest, WriteSingleRegisterResponse, \
     ModbusStruct
 from .app import ModbusClient, ModbusException
+
 
 # some debugging
 _debug = 0
@@ -146,17 +150,14 @@ class ConsoleClient(ConsoleCmd, Client):
             return
 
         # get the address and unit
-        addr, unitID, register = args[:3]
+        addr, unitID, register, value = args[:4]
         unitID = int(unitID)
         if _debug: ConsoleClient._debug("    - addr, unitID: %r, %r", addr, unitID)
 
-        # get the register and count
+        # get the register and value
         register = int(register)
-        if len(args) == 4:
-            rcount = int(args[3])
-        else:
-            rcount = 1
-        if _debug: ConsoleClient._debug("    - register, rcount: %r, %r", register, rcount)
+        value = int(value)
+        if _debug: ConsoleClient._debug("    - register, value: %r, %r", register, value)
 
         # decode the register into a type
         digits = int(math.log10(register)) + 1
