@@ -11,7 +11,7 @@ read and write MODBUS PDUs.
 
 import math
 
-from bacpypes.debugging import class_debugging, ModuleLogger
+from bacpypes.debugging import bacpypes_debugging, ModuleLogger
 from bacpypes.consolecmd import ConsoleCmd
 from bacpypes.consolelogging import ArgumentParser
 
@@ -22,24 +22,18 @@ from .pdu import ExceptionResponse, \
     ReadCoilsRequest, ReadCoilsResponse, \
     ReadDiscreteInputsRequest, ReadDiscreteInputsResponse, \
     ReadMultipleRegistersRequest, ReadMultipleRegistersResponse, \
-    ReadInputRegistersRequest, ReadInputRegistersResponse, \
-    WriteSingleCoilRequest, WriteSingleCoilResponse, \
-    WriteSingleRegisterRequest, WriteSingleRegisterResponse, \
     ModbusStruct
 from .app import ModbusClient, ModbusException
-
 
 # some debugging
 _debug = 0
 _log = ModuleLogger(globals())
 
-
 #
 #   ConsoleClient
 #
 
-
-@class_debugging
+@bacpypes_debugging
 class ConsoleClient(ConsoleCmd, Client):
 
     """
@@ -150,14 +144,17 @@ class ConsoleClient(ConsoleCmd, Client):
             return
 
         # get the address and unit
-        addr, unitID, register, value = args[:4]
+        addr, unitID, register = args[:3]
         unitID = int(unitID)
         if _debug: ConsoleClient._debug("    - addr, unitID: %r, %r", addr, unitID)
 
-        # get the register and value
+        # get the register and count
         register = int(register)
-        value = int(value)
-        if _debug: ConsoleClient._debug("    - register, value: %r, %r", register, value)
+        if len(args) == 4:
+            rcount = int(args[3])
+        else:
+            rcount = 1
+        if _debug: ConsoleClient._debug("    - register, rcount: %r, %r", register, rcount)
 
         # decode the register into a type
         digits = int(math.log10(register)) + 1
@@ -238,34 +235,29 @@ class ConsoleClient(ConsoleCmd, Client):
         else:
             raise TypeError("unsupported response")
 
-
 #
 #   main
 #
 
-
 def main():
-    try:
-        # parse the command line arguments
-        parser = ArgumentParser(description=__doc__)
+    # parse the command line arguments
+    parser = ArgumentParser(description=__doc__)
 
-        # now parse the arguments
-        args = parser.parse_args()
+    # now parse the arguments
+    args = parser.parse_args()
 
-        if _debug: _log.debug("initialization")
-        if _debug: _log.debug("    - args: %r", args)
+    if _debug: _log.debug("initialization")
+    if _debug: _log.debug("    - args: %r", args)
 
-        # local IO functions
-        bind(ConsoleClient(), ModbusClient())
+    # local IO functions
+    bind(ConsoleClient(), ModbusClient())
 
-        _log.debug("running")
+    _log.debug("running")
 
-        run()
+    run()
 
-    except Exception as err:
-        _log.exception("an error has occurred: %s" % (err,))
-    finally:
-        _log.debug("finally")
+    _log.debug("fini")
 
 if __name__ == "__main__":
     main()
+
