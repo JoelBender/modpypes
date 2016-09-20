@@ -60,14 +60,14 @@ class ConsoleServer(ConsoleCmd, Client):
             try:
                 fn = getattr(self, "do_" + req.__class__.__name__)
             except AttributeError:
-                raise ModbusException, ExceptionResponse.ILLEGAL_FUNCTION
+                raise ModbusException(ExceptionResponse.ILLEGAL_FUNCTION)
 
             # try to execute it
             resp = fn(req)
 
-        except ModbusException, e:
+        except ModbusException as err:
             # create an exception response
-            resp = ExceptionResponse(req.mpduFunctionCode, e.errCode)
+            resp = ExceptionResponse(req.mpduFunctionCode, err.errCode)
 
         # match the transaction information
         resp.pduDestination = req.pduSource
@@ -100,7 +100,7 @@ class ConsoleServer(ConsoleCmd, Client):
     def do_ReadCoilsRequest(self, req):
         ConsoleServer._debug('do_ReadCoilsRequest %r', req)
         if (req.address + req.count) > len(self.coils):
-            raise ModbusException, ExceptionResponse.ILLEGAL_DATA_ADDRESS
+            raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
         self.pull_coils(req.address, req.count)
 
@@ -109,7 +109,7 @@ class ConsoleServer(ConsoleCmd, Client):
     def do_WriteSingleCoilRequest(self, req):
         ConsoleServer._debug('do_WriteSingleCoilRequest %r', req)
         if req.address > len(self.coils):
-            raise ModbusException, ExceptionResponse.ILLEGAL_DATA_ADDRESS
+            raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
         # check the value and save it
         if (req.value == 0x00):
@@ -117,7 +117,7 @@ class ConsoleServer(ConsoleCmd, Client):
         elif (req.value == 0xFF):
             self.coils[req.address] = 1
         else:
-            raise ModbusException, ExceptionResponse.ILLEGAL_DATA_VALUE
+            raise ModbusException(ExceptionResponse.ILLEGAL_DATA_VALUE)
 
         self.push_coils(req.address, 1)
 
@@ -129,7 +129,7 @@ class ConsoleServer(ConsoleCmd, Client):
     def do_ReadDescreteInputsRequest(self, req):
         ConsoleServer._debug('do_ReadDescreteInputsRequest %r', req)
         if (req.address + req.count) > len(self.coils):
-            raise ModbusException, ExceptionResponse.ILLEGAL_DATA_ADDRESS
+            raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
         self.pull_coils(req.address, req.count)
 
@@ -140,7 +140,7 @@ class ConsoleServer(ConsoleCmd, Client):
     def do_ReadMultipleRegistersRequest(self, req):
         ConsoleServer._debug('do_ReadMultipleRegistersRequest %r', req)
         if (req.address + req.count) > len(self.registers):
-            raise ModbusException, ExceptionResponse.ILLEGAL_DATA_ADDRESS
+            raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
         self.pull_registers(req.address, req.count)
 
@@ -149,7 +149,7 @@ class ConsoleServer(ConsoleCmd, Client):
     def do_WriteSingleRegisterRequest(self, req):
         ConsoleServer._debug('do_WriteSingleRegisterRequest %r', req)
         if req.address > len(self.registers):
-            raise ModbusException, ExceptionResponse.ILLEGAL_DATA_ADDRESS
+            raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
         # save the value
         self.registers[req.address] = req.value
@@ -162,7 +162,7 @@ class ConsoleServer(ConsoleCmd, Client):
     def do_WriteMultipleRegistersRequest(self, req):
         ConsoleServer._debug('do_WriteMultipleRegistersRequest %r', req)
         if (req.address + req.count) > len(self.registers):
-            raise ModbusException, ExceptionResponse.ILLEGAL_DATA_ADDRESS
+            raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
         # save the values
         for i in range(req.count):
@@ -177,7 +177,7 @@ class ConsoleServer(ConsoleCmd, Client):
     def do_ReadInputRegistersRequest(self, req):
         ConsoleServer._debug('do_ReadInputRegistersRequest %r', req)
         if (req.address + req.count) > len(self.registers):
-            raise ModbusException, ExceptionResponse.ILLEGAL_DATA_ADDRESS
+            raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
         self.pull_registers(req.address, req.count)
 

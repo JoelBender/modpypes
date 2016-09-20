@@ -72,10 +72,10 @@ class _Struct:
     registerLength = None
 
     def pack(self, value):
-        raise NotImplementedError
+        raise NotImplementedError("pack is not implemented in %s" % (self.__class__.__name__,))
 
     def unpack(self, registers):
-        raise NotImplementedError
+        raise NotImplementedError("unpack is not implemented in %s" % (self.__class__.__name__,))
 
 @class_debugging
 class Byte(_Struct):
@@ -209,7 +209,7 @@ class ROCReal(_Struct):
 
     def pack(self, value):
         if _debug: ROCReal._debug("pack %r", value)
-        raise NotImplementedError("packing is not supported")
+        raise NotImplementedError("packing ROCReal is not supported")
 
     def unpack(self, registers):
         if _debug: ROCReal._debug("unpack %r", registers)
