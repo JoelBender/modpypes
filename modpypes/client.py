@@ -21,7 +21,10 @@ from bacpypes.core import run
 from .pdu import ExceptionResponse, \
     ReadCoilsRequest, ReadCoilsResponse, \
     ReadDiscreteInputsRequest, ReadDiscreteInputsResponse, \
+    ReadInputRegistersRequest, ReadInputRegistersResponse, \
     ReadMultipleRegistersRequest, ReadMultipleRegistersResponse, \
+    WriteSingleCoilRequest, WriteSingleCoilResponse, \
+    WriteSingleRegisterRequest, WriteSingleRegisterResponse, \
     ModbusStruct
 from .app import ModbusClient, ModbusException
 
@@ -146,16 +149,25 @@ class ConsoleClient(ConsoleCmd, Client):
         prefix; 0 or 4.
         """
         args = args.split()
-        if _debug: ConsoleClient._debug("do_read %r", args)
+        if _debug: ConsoleClient._debug("do_write %r", args)
 
         if (len(args) < 3):
             print("address, unit and register required")
             return
 
         # get the address and unit
-        addr, unitID, register = args[:3]
+        addr, unitID, register, value = args
+
+        # address might have a port
+        if ':' in addr:
+            addr, port = addr.split(':')
+            server_address = (addr, int(port))
+        else:
+            server_address = (addr, 502)
+
+        # unit identifier
         unitID = int(unitID)
-        if _debug: ConsoleClient._debug("    - addr, unitID: %r, %r", addr, unitID)
+        if _debug: ConsoleClient._debug("    - addr, unitID: %r, %r", server_address, unitID)
 
         # get the register and count
         register = int(register)
@@ -181,6 +193,10 @@ class ConsoleClient(ConsoleCmd, Client):
             return
         if _debug: ConsoleClient._debug("    - registerType, register: %r, %r", registerType, register)
 
+        # value
+        value = int(value)
+        if _debug: ConsoleClient._debug("    - value: %r", value)
+
         # build a request
         if registerType == 0:
             # coil
@@ -193,7 +209,7 @@ class ConsoleClient(ConsoleCmd, Client):
             return
 
         # set the destination
-        req.pduDestination = (addr, 502)
+        req.pduDestination = server_address
         req.mpduUnitID = unitID
         if _debug: ConsoleClient._debug("    - req: %r", req)
 
