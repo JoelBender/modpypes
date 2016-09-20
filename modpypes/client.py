@@ -67,8 +67,17 @@ class ConsoleClient(ConsoleCmd, Client):
             print("address, unit and register required")
             return
 
-        # get the address and unit
+        # get the address and unit, and register
         addr, unitID, register = args[:3]
+
+        # address might have a port
+        if ':' in addr:
+            addr, port = addr.split(':')
+            server_address = (addr, int(port))
+        else:
+            server_address = (addr, 502)
+
+        # unit identifier
         unitID = int(unitID)
         if _debug: ConsoleClient._debug("    - addr, unitID: %r, %r", addr, unitID)
 
@@ -114,7 +123,7 @@ class ConsoleClient(ConsoleCmd, Client):
             return
 
         # set the destination
-        req.pduDestination = (addr, 502)
+        req.pduDestination = server_address
         req.mpduUnitID = unitID
         if _debug: ConsoleClient._debug("    - req: %r", req)
 
