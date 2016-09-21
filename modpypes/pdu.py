@@ -8,7 +8,7 @@ Protocol Data Units
 
 import struct
 
-from bacpypes.debugging import class_debugging, DebugContents, ModuleLogger
+from bacpypes.debugging import bacpypes_debugging, DebugContents, ModuleLogger
 
 from bacpypes.comm import PDUData, PCI
 from bacpypes.errors import DecodingError
@@ -77,7 +77,7 @@ class _Struct:
     def unpack(self, registers):
         raise NotImplementedError("unpack is not implemented in %s" % (self.__class__.__name__,))
 
-@class_debugging
+@bacpypes_debugging
 class Byte(_Struct):
 
     """
@@ -96,7 +96,7 @@ class Byte(_Struct):
 
         return registers[0]
 
-@class_debugging
+@bacpypes_debugging
 class Int(_Struct):
 
     """
@@ -119,7 +119,7 @@ class Int(_Struct):
 
         return value
 
-@class_debugging
+@bacpypes_debugging
 class UnsignedInt(_Struct):
 
     """
@@ -138,7 +138,7 @@ class UnsignedInt(_Struct):
 
         return registers[0]
 
-@class_debugging
+@bacpypes_debugging
 class DoubleInt(_Struct):
 
     """
@@ -161,7 +161,7 @@ class DoubleInt(_Struct):
 
         return value
 
-@class_debugging
+@bacpypes_debugging
 class UnsignedDoubleInt(_Struct):
 
     """
@@ -180,7 +180,7 @@ class UnsignedDoubleInt(_Struct):
 
         return (registers[0] << 16) | registers[1]
 
-@class_debugging
+@bacpypes_debugging
 class Real(_Struct):
 
     registerLength = 2
@@ -202,7 +202,7 @@ class Real(_Struct):
         value, = struct.unpack(">f", struct.pack(">HH", registers[1], registers[0]))
         return value
 
-@class_debugging
+@bacpypes_debugging
 class ROCReal(_Struct):
 
     registerLength = 1
@@ -222,7 +222,7 @@ class ROCReal(_Struct):
         value, = struct.unpack(">f", struct.pack(">HH", r1, r0))
         return value
 
-@class_debugging
+@bacpypes_debugging
 class BigEndianDoubleInt(_Struct):
 
     """
@@ -245,7 +245,7 @@ class BigEndianDoubleInt(_Struct):
 
         return value
 
-@class_debugging
+@bacpypes_debugging
 class BigEndianUnsignedDoubleInt(_Struct):
 
     """
@@ -264,7 +264,7 @@ class BigEndianUnsignedDoubleInt(_Struct):
 
         return (registers[1] << 16) | registers[0]
 
-@class_debugging
+@bacpypes_debugging
 class BigEndianReal(_Struct):
 
     registerLength = 2
@@ -286,7 +286,7 @@ class BigEndianReal(_Struct):
         value, = struct.unpack(">f", struct.pack(">HH", registers[0], registers[1]))
         return value
 
-@class_debugging
+@bacpypes_debugging
 class String(_Struct):
 
     """
@@ -315,7 +315,7 @@ class String(_Struct):
         value = value[:value.find('\x00')]
         return value
 
-@class_debugging
+@bacpypes_debugging
 class BigEndianString(_Struct):
 
     """
@@ -367,7 +367,7 @@ ModbusStruct = {
 #  MPCI
 #
 
-@class_debugging
+@bacpypes_debugging
 class MPCI(PCI, DebugContents):
 
     """
@@ -446,7 +446,7 @@ class MPCI(PCI, DebugContents):
 #   MPDU
 #
 
-@class_debugging
+@bacpypes_debugging
 class MPDU(MPCI, PDUData):
 
     """
@@ -474,7 +474,7 @@ class MPDU(MPCI, PDUData):
 
 #------------------------------
 
-@class_debugging
+@bacpypes_debugging
 class ReadBitsRequestBase(MPCI, DebugContents):
 
     """
@@ -506,7 +506,7 @@ class ReadBitsRequestBase(MPCI, DebugContents):
         self.address = pdu.get_short()
         self.count = pdu.get_short()
 
-@class_debugging
+@bacpypes_debugging
 class ReadBitsResponseBase(MPCI, DebugContents):
 
     """
@@ -542,7 +542,7 @@ class ReadBitsResponseBase(MPCI, DebugContents):
         datalen = pdu.get()
         self.bits = _unpackBitsFromString(pdu.get_data(datalen))
 
-@class_debugging
+@bacpypes_debugging
 class ReadRegistersRequestBase(MPCI, DebugContents):
 
     """
@@ -575,7 +575,7 @@ class ReadRegistersRequestBase(MPCI, DebugContents):
         self.address = pdu.get_short()
         self.count = pdu.get_short()
 
-@class_debugging
+@bacpypes_debugging
 class ReadRegistersResponseBase(MPCI, DebugContents):
 
     """
@@ -613,7 +613,7 @@ class ReadRegistersResponseBase(MPCI, DebugContents):
         for i in range(datalen / 2):
             self.registers.append(pdu.get_short())
 
-@class_debugging
+@bacpypes_debugging
 class ReadWriteValueBase(MPCI, DebugContents):
 
     """
@@ -652,7 +652,7 @@ class ReadWriteValueBase(MPCI, DebugContents):
 #   ReadCoils
 #
 
-@class_debugging
+@bacpypes_debugging
 class ReadCoilsRequest(ReadBitsRequestBase):
 
     """
@@ -669,7 +669,7 @@ class ReadCoilsRequest(ReadBitsRequestBase):
 
 register_request_type(ReadCoilsRequest)
 
-@class_debugging
+@bacpypes_debugging
 class ReadCoilsResponse(ReadBitsResponseBase):
 
     """
@@ -690,7 +690,7 @@ register_response_type(ReadCoilsResponse)
 #   ReadDescreteInputs
 #
 
-@class_debugging
+@bacpypes_debugging
 class ReadDiscreteInputsRequest(ReadBitsRequestBase):
 
     """
@@ -707,7 +707,7 @@ class ReadDiscreteInputsRequest(ReadBitsRequestBase):
 
 register_request_type(ReadDiscreteInputsRequest)
 
-@class_debugging
+@bacpypes_debugging
 class ReadDiscreteInputsResponse(ReadBitsResponseBase):
 
     """
@@ -728,7 +728,7 @@ register_response_type(ReadDiscreteInputsResponse)
 #   ReadMultipleRegisters
 #
 
-@class_debugging
+@bacpypes_debugging
 class ReadMultipleRegistersRequest(ReadRegistersRequestBase):
 
     """
@@ -745,7 +745,7 @@ class ReadMultipleRegistersRequest(ReadRegistersRequestBase):
 
 register_request_type(ReadMultipleRegistersRequest)
 
-@class_debugging
+@bacpypes_debugging
 class ReadMultipleRegistersResponse(ReadRegistersResponseBase):
 
     """
@@ -766,7 +766,7 @@ register_response_type(ReadMultipleRegistersResponse)
 #   ReadInputRegisters
 #
 
-@class_debugging
+@bacpypes_debugging
 class ReadInputRegistersRequest(ReadRegistersRequestBase):
 
     """
@@ -783,7 +783,7 @@ class ReadInputRegistersRequest(ReadRegistersRequestBase):
 
 register_request_type(ReadInputRegistersRequest)
 
-@class_debugging
+@bacpypes_debugging
 class ReadInputRegistersResponse(ReadRegistersResponseBase):
 
     """
@@ -804,7 +804,7 @@ register_response_type(ReadInputRegistersResponse)
 #   WriteSingleCoil
 #
 
-@class_debugging
+@bacpypes_debugging
 class WriteSingleCoilRequest(ReadWriteValueBase):
 
     """
@@ -821,7 +821,7 @@ class WriteSingleCoilRequest(ReadWriteValueBase):
 
 register_request_type(WriteSingleCoilRequest)
 
-@class_debugging
+@bacpypes_debugging
 class WriteSingleCoilResponse(ReadWriteValueBase):
 
     """
@@ -842,7 +842,7 @@ register_response_type(WriteSingleCoilResponse)
 #   WriteSingleRegister
 #
 
-@class_debugging
+@bacpypes_debugging
 class WriteSingleRegisterRequest(ReadWriteValueBase):
 
     """
@@ -859,7 +859,7 @@ class WriteSingleRegisterRequest(ReadWriteValueBase):
 
 register_request_type(WriteSingleRegisterRequest)
 
-@class_debugging
+@bacpypes_debugging
 class WriteSingleRegisterResponse(ReadWriteValueBase):
 
     """
@@ -880,7 +880,7 @@ register_response_type(WriteSingleRegisterResponse)
 #   WriteMultipleCoils
 #
 
-@class_debugging
+@bacpypes_debugging
 class WriteMultipleCoilsRequest(MPCI, DebugContents):
 
     """
@@ -930,7 +930,7 @@ class WriteMultipleCoilsRequest(MPCI, DebugContents):
 
 register_request_type(WriteMultipleCoilsRequest)
 
-@class_debugging
+@bacpypes_debugging
 class WriteMultipleCoilsResponse(MPCI, DebugContents):
 
     """
@@ -970,7 +970,7 @@ register_response_type(WriteMultipleCoilsResponse)
 #   WriteMultipleRegisters
 #
 
-@class_debugging
+@bacpypes_debugging
 class WriteMultipleRegistersRequest(MPCI, DebugContents):
 
     """
@@ -1022,7 +1022,7 @@ class WriteMultipleRegistersRequest(MPCI, DebugContents):
 
 register_request_type(WriteMultipleRegistersRequest)
 
-@class_debugging
+@bacpypes_debugging
 class WriteMultipleRegistersResponse(MPCI, DebugContents):
 
     """
@@ -1062,7 +1062,7 @@ register_response_type(WriteMultipleRegistersResponse)
 #   ReadWriteMultipleRegistersRequest
 #
 
-@class_debugging
+@bacpypes_debugging
 class ReadWriteMultipleRegistersRequest(MPCI, DebugContents):
 
     """
@@ -1118,7 +1118,7 @@ class ReadWriteMultipleRegistersRequest(MPCI, DebugContents):
 
 register_request_type(ReadWriteMultipleRegistersRequest)
 
-@class_debugging
+@bacpypes_debugging
 class ReadWriteMultipleRegistersResponse(MPCI, DebugContents):
 
     """
@@ -1163,7 +1163,7 @@ register_response_type(ReadWriteMultipleRegistersResponse)
 #   ExceptionResponse
 #
 
-@class_debugging
+@bacpypes_debugging
 class ExceptionResponse(MPCI, DebugContents):
 
     """

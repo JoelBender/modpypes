@@ -6,7 +6,7 @@ Application
 ===========
 """
 
-from bacpypes.debugging import class_debugging, ModuleLogger
+from bacpypes.debugging import bacpypes_debugging, ModuleLogger
 
 from bacpypes.comm import PDU, Client, Server, ServiceAccessPoint, bind
 from bacpypes.tcp import TCPClientDirector, TCPServerDirector, StreamToPacket
@@ -77,7 +77,7 @@ def stream_to_packet(data):
 #
 
 
-@class_debugging
+@bacpypes_debugging
 class ModbusServiceAccessPoint(Client, Server, ServiceAccessPoint):
     """
     A service access point so applications can be both a client and
@@ -198,7 +198,7 @@ class ModbusServiceAccessPoint(Client, Server, ServiceAccessPoint):
 #   ModbusClient
 #
 
-@class_debugging
+@bacpypes_debugging
 class ModbusClient(Client, Server):
 
     """This class simplifies building MODBUS client applications.  All of
@@ -264,7 +264,7 @@ class ModbusClient(Client, Server):
 #   ModbusServer
 #
 
-@class_debugging
+@bacpypes_debugging
 class ModbusServer(Client, Server):
 
     def __init__(self, port=502, **kwargs):
