@@ -1205,3 +1205,4 @@ class ExceptionResponse(MPCI, DebugContents):
 
         MPCI.update(self, pdu)
         self.exceptionCode = pdu.get()
+
