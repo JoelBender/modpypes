@@ -17,7 +17,7 @@ from bacpypes.consolelogging import ArgumentParser
 
 from bacpypes.comm import Client, bind
 from bacpypes.core import run
-from bacpypes.iocb import IOCB, IOController, IOQController
+from bacpypes.iocb import IOCB, SieveClientController
 
 from .pdu import ExceptionResponse, \
     ReadCoilsRequest, ReadCoilsResponse, \
@@ -34,105 +34,6 @@ _debug = 0
 _log = ModuleLogger(globals())
 
 #
-#   QController
-#
-
-@bacpypes_debugging
-class QController(IOQController):
-
-    def __init__(self, request_fn, address):
-        """Initialize an application controller.  To process requests it only
-        needs the function to call that sends an APDU down the stack, the address
-        parameter is to help with debugging."""
-        if _debug: QController._debug("__init__ %r %r", request_fn, address)
-        IOQController.__init__(self, str(address))
-
-        # save a reference to the request function
-        self.request_fn = request_fn
-        self.address = address
-
-    def process_io(self, iocb):
-        """Called to start processing a request.  This is called immediately
-        when the controller is idle, otherwise this is called for the next IOCB
-        when the current request has been satisfied."""
-        if _debug: QController._debug("process_io %r", iocb)
-
-        # this is now an active request
-        self.active_io(iocb)
-
-        # send the request
-        self.request_fn(iocb.args[0])
-
-#
-#   Controller
-#
-
-@bacpypes_debugging
-class Controller(Client, IOController):
-
-    def __init__(self):
-        if _debug: Controller._debug("__init__")
-        Client.__init__(self)
-        IOController.__init__(self)
-
-        # controllers for each address
-        self.controllers = {}
-
-    def process_io(self, iocb):
-        if _debug: Controller._debug("process_io %r", iocb)
-
-        # get the destination address from the pdu
-        destination_address = iocb.args[0].pduDestination
-        if _debug: Controller._debug("    - destination_address: %r", destination_address)
-
-        # look up the controller
-        controller = self.controllers.get(destination_address, None)
-        if not controller:
-            controller = QController(self.request, destination_address)
-            self.controllers[destination_address] = controller
-        if _debug: Controller._debug("    - controller: %r", controller)
-
-        # ask the controller to process or queue the request
-        controller.request_io(iocb)
-
-    def request(self, pdu):
-        if _debug: Controller._debug("request %r", pdu)
-
-        # send it downstream
-        super(Controller, self).request(pdu)
-
-    def confirmation(self, pdu):
-        if _debug: Controller._debug("confirmation %r", pdu)
-
-        # get the source address
-        source_address = pdu.pduSource
-        if _debug: Controller._debug("    - source_address: %r", source_address)
-
-        # look up the controller
-        controller = self.controllers.get(source_address, None)
-        if not controller:
-            Controller._debug("no controller for %r" % (source_address,))
-            return
-        if _debug: Controller._debug("    - controller: %r", controller)
-
-        # make sure it has an active iocb
-        if not controller.active_iocb:
-            Controller._debug("no active request for %r" % (source_address,))
-            return
-
-        # complete or abort the request
-        if isinstance(pdu, ExceptionResponse):
-            controller.abort_io(controller.active_iocb, pdu)
-        else:
-            controller.complete_io(controller.active_iocb, pdu)
-
-        # if the queue is empty and idle, forget about the controller
-        if not controller.ioQueue.queue and not controller.active_iocb:
-            if _debug: Controller._debug("    - controller queue is empty")
-            del self.controllers[source_address]
-
-
-#
 #   ConsoleClient
 #
 
@@ -144,7 +45,7 @@ class ConsoleClient(ConsoleCmd):
     """
 
     def __init__(self, controller):
-        if _debug: ConsoleClient._debug("__init__")
+        if _debug: ConsoleClient._debug("__init__ %r", controller)
         ConsoleCmd.__init__(self)
 
         # save the controller
@@ -239,28 +140,35 @@ class ConsoleClient(ConsoleCmd):
 
         # wait for the response
         iocb.wait()
-        iocb.debug_contents()
 
         # exceptions
         if iocb.ioError:
             print(iocb.ioError)
+            return
+
+        # extract the response
+        resp = iocb.ioResponse
+        if _debug: ConsoleClient._debug("    - resp: %r", resp)
 
         # read responses
-        elif isinstance(iocb.ioResponse, ReadCoilsResponse):
-            print("  ::= " + str(iocb.ioResponse.bits))
+        if isinstance(resp, ExceptionResponse):
+            print("  ::= " + str(resp))
 
-        elif isinstance(iocb.ioResponse, ReadDiscreteInputsResponse):
-            print("  ::= " + str(iocb.ioResponse.bits))
+        elif isinstance(resp, ReadCoilsResponse):
+            print("  ::= " + str(resp.bits))
 
-        elif isinstance(iocb.ioResponse, ReadInputRegistersResponse):
-            print("  ::= " + str(iocb.ioResponse.registers))
+        elif isinstance(resp, ReadDiscreteInputsResponse):
+            print("  ::= " + str(resp.bits))
 
-        elif isinstance(iocb.ioResponse, ReadMultipleRegistersResponse):
-            print("  ::= " + str(iocb.ioResponse.registers))
+        elif isinstance(resp, ReadInputRegistersResponse):
+            print("  ::= " + str(resp.registers))
+
+        elif isinstance(resp, ReadMultipleRegistersResponse):
+            print("  ::= " + str(resp.registers))
 
             for dtype, codec in ModbusStruct.items():
                 try:
-                    value = codec.unpack(iocb.ioResponse.registers)
+                    value = codec.unpack(resp.registers)
                     print("   " + dtype + " ::= " + str(value))
                 except Exception as err:
                     if _debug: ConsoleClient._debug("unpack exception %r: %r", codec, err)
@@ -384,7 +292,7 @@ def main():
     if _debug: _log.debug("    - args: %r", args)
 
     # make a controller
-    this_controller = Controller()
+    this_controller = SieveClientController()
     if _debug: _log.debug("    - this_controller: %r", this_controller)
 
     this_console = ConsoleClient(this_controller)
