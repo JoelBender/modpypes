@@ -295,11 +295,12 @@ def main():
     this_controller = SieveClientController()
     if _debug: _log.debug("    - this_controller: %r", this_controller)
 
-    this_console = ConsoleClient(this_controller)
-    if _debug: _log.debug("    - this_console: %r", this_console)
-
     # local IO functions
     bind(this_controller, ModbusClient())
+
+    # if this is being run, then a console is handy
+    this_console = ConsoleClient(this_controller)
+    if _debug: _log.debug("    - this_console: %r", this_console)
 
     _log.debug("running")
 
