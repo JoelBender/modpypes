@@ -114,6 +114,11 @@ class ModbusClient(Client, Server):
         """Got a response from the server."""
         if _debug: ModbusClient._debug("confirmation %r", pdu)
 
+        # pass through errors
+        if isinstance(pdu, Exception):
+            self.response(pdu)
+            return
+
         # generic decode
         mpdu = MPDU()
         mpdu.decode(pdu)
@@ -157,6 +162,11 @@ class ModbusServer(Client, Server):
     def confirmation(self, pdu):
         """This is a request from a client."""
         if _debug: ModbusServer._debug("confirmation %r", pdu)
+
+        # pass through errors
+        if isinstance(pdu, Exception):
+            self.response(pdu)
+            return
 
         # generic decoding
         mpdu = MPDU()
