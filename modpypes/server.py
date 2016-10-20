@@ -31,20 +31,23 @@ SERVER_HOST = os.getenv("SERVER_HOST", "")
 SERVER_PORT = int(os.getenv("SERVER_PORT", 502))
 
 #
-#   ConsoleServer
+#   SimpleServer
 #
 
 
 @bacpypes_debugging
-class ConsoleServer(ConsoleCmd, Client):
+class SimpleServer(Client):
 
     """
-    Console Server
+    Simple Server
     """
 
-    def __init__(self):
-        if _debug: ConsoleServer._debug("__init__")
-        ConsoleCmd.__init__(self)
+    def __init__(self, unitNumber=1):
+        if _debug: SimpleServer._debug("__init__")
+        Client.__init__(self)
+
+        # save the unit number
+        self.unitNumber = unitNumber
 
         # create some coils and registers
         self.coils = [False] * 10
@@ -52,8 +55,18 @@ class ConsoleServer(ConsoleCmd, Client):
 
     def confirmation(self, req):
         """Got a request from a client."""
-        if _debug: ConsoleServer._debug("confirmation %r", req)
+        if _debug: SimpleServer._debug("confirmation %r", req)
         _commlog.debug(">>> %r %r", req.pduSource, req)
+
+        # if its an exception, punt
+        if isinstance(req, Exception):
+            if _debug: SimpleServer._debug("    - punt exceptions")
+            return
+
+        # if it's not for us, dump it
+        if req.mpduUnitID != self.unitNumber:
+            if _debug: SimpleServer._debug("    - not for us")
+            return
 
         try:
             # look up a matching function
@@ -79,26 +92,26 @@ class ConsoleServer(ConsoleCmd, Client):
 
     def pull_coils(self, address, count):
         """Called when there is a request for the current value of a coil."""
-        if _debug: ConsoleServer._debug("pull_coils %r %r", address, count)
+        if _debug: SimpleServer._debug("pull_coils %r %r", address, count)
 
     def push_coils(self, address, count):
         """Called when a MODBUS service has changed the value of one or more coils."""
-        if _debug: ConsoleServer._debug("push_coils %r %r", address, count)
+        if _debug: SimpleServer._debug("push_coils %r %r", address, count)
 
     def pull_registers(self, address, count):
         """Called when a MODBUS client is requesting the current value of one
         or more registers."""
-        if _debug: ConsoleServer._debug("pull_registers %r %r", address, count)
+        if _debug: SimpleServer._debug("pull_registers %r %r", address, count)
 
     def push_registers(self, address, count):
         """Called when a MODBUS service has changed the value of one or more
         registers."""
-        if _debug: ConsoleServer._debug("push_registers %r %r", address, count)
+        if _debug: SimpleServer._debug("push_registers %r %r", address, count)
 
     # ---------- Coils ----------
 
     def do_ReadCoilsRequest(self, req):
-        ConsoleServer._debug('do_ReadCoilsRequest %r', req)
+        SimpleServer._debug('do_ReadCoilsRequest %r', req)
         if (req.address + req.count) > len(self.coils):
             raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
@@ -107,7 +120,7 @@ class ConsoleServer(ConsoleCmd, Client):
         return ReadCoilsResponse(self.coils[req.address:req.address+req.count])
 
     def do_WriteSingleCoilRequest(self, req):
-        ConsoleServer._debug('do_WriteSingleCoilRequest %r', req)
+        SimpleServer._debug('do_WriteSingleCoilRequest %r', req)
         if req.address > len(self.coils):
             raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
@@ -127,7 +140,7 @@ class ConsoleServer(ConsoleCmd, Client):
     # ---------- Descrete Inputs (mapped as a coil) ----------
 
     def do_ReadDescreteInputsRequest(self, req):
-        ConsoleServer._debug('do_ReadDescreteInputsRequest %r', req)
+        SimpleServer._debug('do_ReadDescreteInputsRequest %r', req)
         if (req.address + req.count) > len(self.coils):
             raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
@@ -138,7 +151,7 @@ class ConsoleServer(ConsoleCmd, Client):
     # ---------- Registers ----------
 
     def do_ReadMultipleRegistersRequest(self, req):
-        ConsoleServer._debug('do_ReadMultipleRegistersRequest %r', req)
+        SimpleServer._debug('do_ReadMultipleRegistersRequest %r', req)
         if (req.address + req.count) > len(self.registers):
             raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
@@ -147,7 +160,7 @@ class ConsoleServer(ConsoleCmd, Client):
         return ReadMultipleRegistersResponse(self.registers[req.address:req.address+req.count])
 
     def do_WriteSingleRegisterRequest(self, req):
-        ConsoleServer._debug('do_WriteSingleRegisterRequest %r', req)
+        SimpleServer._debug('do_WriteSingleRegisterRequest %r', req)
         if req.address > len(self.registers):
             raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
@@ -160,7 +173,7 @@ class ConsoleServer(ConsoleCmd, Client):
         return WriteSingleRegisterResponse(req.address, req.value)
 
     def do_WriteMultipleRegistersRequest(self, req):
-        ConsoleServer._debug('do_WriteMultipleRegistersRequest %r', req)
+        SimpleServer._debug('do_WriteMultipleRegistersRequest %r', req)
         if (req.address + req.count) > len(self.registers):
             raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
@@ -175,7 +188,7 @@ class ConsoleServer(ConsoleCmd, Client):
     # ---------- Input Registers (mapped as a register) ----------
 
     def do_ReadInputRegistersRequest(self, req):
-        ConsoleServer._debug('do_ReadInputRegistersRequest %r', req)
+        SimpleServer._debug('do_ReadInputRegistersRequest %r', req)
         if (req.address + req.count) > len(self.registers):
             raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
@@ -206,7 +219,7 @@ def main():
     if _debug: _log.debug("    - args: %r", args)
 
     # local IO functions
-    bind(ConsoleServer(), ModbusServer(port=args.port))
+    bind(SimpleServer(), ModbusServer(port=args.port))
 
     _log.debug("running")
 
