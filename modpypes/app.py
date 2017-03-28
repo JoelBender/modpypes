@@ -150,13 +150,13 @@ class ModbusClient(Client, Server):
 @bacpypes_debugging
 class ModbusServer(Client, Server):
 
-    def __init__(self, port=502, **kwargs):
-        if _debug: ModbusServer._debug("__init__ port=%r %r", port, kwargs)
+    def __init__(self, host='', port=502, **kwargs):
+        if _debug: ModbusServer._debug("__init__ host=%r port=%r %r", host, port, kwargs)
         Client.__init__(self)
         Server.__init__(self)
 
         # create and bind
-        self.serverDirector = TCPServerDirector(('', port), **kwargs)
+        self.serverDirector = TCPServerDirector((host, port), **kwargs)
         bind(self, StreamToPacket(stream_to_packet), self.serverDirector)
 
     def confirmation(self, pdu):
