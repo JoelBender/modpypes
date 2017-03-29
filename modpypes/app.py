@@ -6,6 +6,8 @@ Application
 ===========
 """
 
+import sys
+
 from bacpypes.debugging import bacpypes_debugging, ModuleLogger
 
 from bacpypes.comm import PDU, Client, Server, ServiceAccessPoint, bind
@@ -16,6 +18,18 @@ from .pdu import MPDU, request_types, response_types, ExceptionResponse
 # some debugging
 _debug = 0
 _log = ModuleLogger(globals())
+
+
+#
+#   _ord
+#
+
+if sys.version_info[0] == 2:
+    _ord = lambda s: ord(s)
+elif sys.version_info[0] == 3:
+    _ord = lambda s: s
+else:
+    raise RuntimeError("unrecognized Python version")
 
 #
 #   ModbusException
@@ -65,7 +79,8 @@ def stream_to_packet(data):
     if len(data) < 6:
         return None
 
-    pktlen = (ord(data[4]) << 8) + ord(data[5]) + 6
+    # note funky _ord function, a noop in Python3
+    pktlen = (_ord(data[4]) << 8) + _ord(data[5]) + 6
     if (len(data) < pktlen):
         return None
 
