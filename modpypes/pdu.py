@@ -610,7 +610,7 @@ class ReadRegistersResponseBase(MPCI, DebugContents):
         MPCI.update(self, pdu)
         datalen = pdu.get()
         self.registers = []
-        for i in range(datalen / 2):
+        for i in range(datalen // 2):
             self.registers.append(pdu.get_short())
 
 @bacpypes_debugging
@@ -1017,7 +1017,7 @@ class WriteMultipleRegistersRequest(MPCI, DebugContents):
 
         datalen = pdu.get()
         self.registers = []
-        for i in range(datalen / 2):
+        for i in range(datalen // 2):
             self.registers.append(pdu.get_short())
 
 register_request_type(WriteMultipleRegistersRequest)
@@ -1113,7 +1113,7 @@ class ReadWriteMultipleRegistersRequest(MPCI, DebugContents):
 
         datalen = pdu.get()
         self.registers = []
-        for i in range(datalen / 2):
+        for i in range(datalen // 2):
             self.registers.append(pdu.get_short())
 
 register_request_type(ReadWriteMultipleRegistersRequest)
@@ -1154,7 +1154,7 @@ class ReadWriteMultipleRegistersResponse(MPCI, DebugContents):
         MPCI.update(self, pdu)
         datalen = pdu.get()
         self.registers = []
-        for i in range(datalen / 2):
+        for i in range(datalen // 2):
             self.registers.append(pdu.get_short())
 
 register_response_type(ReadWriteMultipleRegistersResponse)
