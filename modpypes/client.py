@@ -115,10 +115,10 @@ class ConsoleClient(ConsoleCmd):
             req = ReadCoilsRequest(register - 1, rcount)
         elif registerType == 1:
             # discrete inputs
-            req = ReadDiscreteInputsRequest(register - 1, 1)
+            req = ReadDiscreteInputsRequest(register - 1, rcount)
         elif registerType == 3:
             # input register
-            req = ReadInputRegistersRequest(register - 1, 1)
+            req = ReadInputRegistersRequest(register - 1, rcount)
         elif registerType == 4:
             # holding register
             req = ReadMultipleRegistersRequest(register - 1, rcount)
@@ -162,6 +162,13 @@ class ConsoleClient(ConsoleCmd):
 
         elif isinstance(resp, ReadInputRegistersResponse):
             print("  ::= " + str(resp.registers))
+
+            for dtype, codec in ModbusStruct.items():
+                try:
+                    value = codec.unpack(resp.registers)
+                    print("   " + dtype + " ::= " + str(value))
+                except Exception as err:
+                    if _debug: ConsoleClient._debug("unpack exception %r: %r", codec, err)
 
         elif isinstance(resp, ReadMultipleRegistersResponse):
             print("  ::= " + str(resp.registers))
