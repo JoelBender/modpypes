@@ -95,7 +95,7 @@ class ConsoleClient(ConsoleCmd):
 
         # decode the register into a type
         digits = int(math.log10(register)) + 1
-        if digits < 4:
+        if digits <= 4:
             # must be a coil
             registerType = 0
         elif digits == 5:
@@ -226,7 +226,7 @@ class ConsoleClient(ConsoleCmd):
 
         # decode the register into a type
         digits = int(math.log10(register)) + 1
-        if digits < 4:
+        if digits <= 4:
             # must be a coil
             registerType = 0
         elif digits == 5:
@@ -273,9 +273,14 @@ class ConsoleClient(ConsoleCmd):
         # exceptions
         if iocb.ioError:
             print(iocb.ioError)
+            return
+
+        # extract the response
+        resp = iocb.ioResponse
+        if _debug: ConsoleClient._debug("    - resp: %r", resp)
 
         # write responses
-        elif isinstance(iocb.ioResponse, WriteSingleCoilResponse):
+        if isinstance(iocb.ioResponse, WriteSingleCoilResponse):
             print("  ::= " + str(iocb.ioResponse.bits))
 
         elif isinstance(iocb.ioResponse, WriteSingleRegisterResponse):
