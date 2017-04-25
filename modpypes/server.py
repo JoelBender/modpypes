@@ -125,9 +125,9 @@ class SimpleServer(Client):
             raise ModbusException(ExceptionResponse.ILLEGAL_DATA_ADDRESS)
 
         # check the value and save it
-        if (req.value == 0x00):
+        if (req.value == 0x0000):
             self.coils[req.address] = 0
-        elif (req.value == 0xFF):
+        elif (req.value == 0xFF00):
             self.coils[req.address] = 1
         else:
             raise ModbusException(ExceptionResponse.ILLEGAL_DATA_VALUE)
