@@ -218,11 +218,7 @@ class ConsoleClient(ConsoleCmd):
 
         # get the register and count
         register = int(register)
-        if len(args) == 4:
-            rcount = int(args[3])
-        else:
-            rcount = 1
-        if _debug: ConsoleClient._debug("    - register, rcount: %r, %r", register, rcount)
+        if _debug: ConsoleClient._debug("    - register: %r", register)
 
         # decode the register into a type
         digits = int(math.log10(register)) + 1
@@ -281,7 +277,7 @@ class ConsoleClient(ConsoleCmd):
 
         # write responses
         if isinstance(iocb.ioResponse, WriteSingleCoilResponse):
-            print("  ::= " + str(iocb.ioResponse.bits))
+            print("  ::= " + str(iocb.ioResponse.value))
 
         elif isinstance(iocb.ioResponse, WriteSingleRegisterResponse):
             print("  ::= " + str(iocb.ioResponse.value))
