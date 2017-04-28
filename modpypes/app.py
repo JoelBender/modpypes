@@ -12,7 +12,7 @@ from bacpypes.debugging import bacpypes_debugging, ModuleLogger
 
 from bacpypes.comm import PDU, Client, Server, ApplicationServiceElement, bind
 from bacpypes.tcp import TCPClientDirector, TCPServerDirector, StreamToPacket
-from bacpypes.iocb import SieveClientController, ABORTED
+from bacpypes.iocb import SieveClientController, CTRL_IDLE, ABORTED
 
 from .pdu import MPDU, request_types, response_types, ExceptionResponse
 
@@ -217,7 +217,7 @@ class ModbusClientController(SieveClientController):
         # look up the queue
         queue = self.queues.get(address, None)
         if not queue:
-            if _debug: ModbusClientController._debug("no queue for %r" % (source_address,))
+            if _debug: ModbusClientController._debug("no queue for %r" % (address,))
             return
         if _debug: ModbusClientController._debug("    - queue: %r", queue)
 
@@ -238,7 +238,7 @@ class ModbusClientController(SieveClientController):
             iocb = queue.ioQueue.get(block=0)
             if not iocb:
                 break
-            if _debug: IOQController._debug("    - iocb: %r", iocb)
+            if _debug: ModbusClientController._debug("    - iocb: %r", iocb)
 
             # change the state
             iocb.ioState = ABORTED
@@ -248,12 +248,12 @@ class ModbusClientController(SieveClientController):
             iocb.trigger()
 
         if (self.state != CTRL_IDLE):
-            if _debug: IOQController._debug("    - busy after aborts")
+            if _debug: ModbusClientController._debug("    - busy after aborts")
 
         # if the queue is empty and idle, forget about the controller
         if not queue.ioQueue.queue and not queue.active_iocb:
             if _debug: SieveClientController._debug("    - queue is empty")
-            del self.queues[source_address]
+            del self.queues[address]
 
 #
 #   ModbusServer

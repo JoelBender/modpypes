@@ -16,7 +16,6 @@ from bacpypes.debugging import bacpypes_debugging, ModuleLogger
 from bacpypes.consolecmd import ConsoleCmd
 from bacpypes.consolelogging import ArgumentParser
 
-from bacpypes.comm import Client, bind
 from bacpypes.core import run, deferred
 from bacpypes.iocb import IOCB
 
