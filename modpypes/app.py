@@ -58,7 +58,6 @@ class ModbusException(RuntimeError):
 #   stream_to_packet
 #
 
-
 def stream_to_packet(data):
     """
     Chop a stream of data into MODBUS packets.
@@ -207,7 +206,7 @@ class ModbusClientController(SieveClientController):
         # look up the queue
         queue = self.queues.get(address, None)
         if not queue:
-            if _debug: ModbusClientController._debug("no queue for %r" % (address,))
+            if _debug: ModbusClientController._debug("    - no queue: %r" % (address,))
             return
         if _debug: ModbusClientController._debug("    - queue: %r", queue)
 
