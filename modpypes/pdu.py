@@ -32,29 +32,29 @@ def register_response_type(klass):
 #
 
 def _packBitsToString(bits):
-    ret = ''
+    barry = []
     i = packed = 0
     for bit in bits:
         if bit:
             packed += 128
         i += 1
         if i == 8:
-            ret += chr(packed)
+            barry.append(packed)
             i = packed = 0
         else:
             packed >>= 1
     if i > 0 and i < 8:
-        packed >>= 7-i
-        ret += chr(packed)
-    return ret
+        packed >>= 7 - i
+        barry.append(packed)
+    return struct.pack("B" * len(barry), *barry)
 
 def _unpackBitsFromString(string):
+    barry = struct.unpack("B" * len(string), string)
     bits = []
-    for byte in string:
-        value = ord(byte)
+    for byte in barry:
         for bit in range(8):
-            bits.append((value & 1) == 1)
-            value >>= 1
+            bits.append((byte & 1) == 1)
+            byte >>= 1
     return bits
 
 #
@@ -530,7 +530,10 @@ class ReadBitsResponseBase(MPCI, DebugContents):
         if _debug: ReadBitsResponseBase._debug("encode %r", pdu)
 
         MPCI.update(pdu, self)
+
         stringbits = _packBitsToString(self.bits)
+        if _debug: ReadBitsResponseBase._debug("    - stringbits: %r", stringbits)
+
         pdu.put(len(stringbits))
         pdu.put_data(stringbits)
         pdu.mpduLength = len(pdu.pduData) + 2
