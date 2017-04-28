@@ -10,8 +10,9 @@ import sys
 
 from bacpypes.debugging import bacpypes_debugging, ModuleLogger
 
-from bacpypes.comm import PDU, Client, Server, ServiceAccessPoint, bind
+from bacpypes.comm import PDU, Client, Server, ApplicationServiceElement, bind
 from bacpypes.tcp import TCPClientDirector, TCPServerDirector, StreamToPacket
+from bacpypes.iocb import SieveClientController, ABORTED
 
 from .pdu import MPDU, request_types, response_types, ExceptionResponse
 
@@ -105,8 +106,8 @@ class ModbusClient(Client, Server):
         Server.__init__(self)
 
         # create and bind the client side
-        self.clientDirector = TCPClientDirector(**kwargs)
-        bind(self, StreamToPacket(stream_to_packet), self.clientDirector)
+        self.director = TCPClientDirector(**kwargs)
+        bind(self, StreamToPacket(stream_to_packet), self.director)
 
     def indication(self, req):
         """Got a request from the application."""
@@ -157,6 +158,102 @@ class ModbusClient(Client, Server):
 
         # pass it along to the application
         self.response(resp)
+
+#
+#   ModbusClientASE
+#
+
+@bacpypes_debugging
+class ModbusClientASE(ApplicationServiceElement):
+
+    def __init__(self, client_controller):
+        if _debug: ModbusClientASE._debug("__init__ %r", client_controller)
+
+        # save the controller reference
+        self.client_controller = client_controller
+
+    def indication(self, add_actor=None, del_actor=None, actor_error=None, error=None):
+        if add_actor:
+            if _debug: ModbusClientASE._debug("indication add_actor=%r", add_actor)
+
+        if del_actor:
+            if _debug: ModbusClientASE._debug("indication del_actor=%r", del_actor)
+
+            # tell the controller to abort all current and pending requests
+            self.client_controller.abort(del_actor.peer, RuntimeError("connection closed"))
+
+        if actor_error:
+            if _debug: ModbusClientASE._debug("indication actor_error=%r error=%r", actor_error, error)
+
+            # tell the controller to abort all current and pending requests
+            self.client_controller.abort(actor_error.peer, error)
+
+            # tell the director to close
+            self.elementService.disconnect(actor_error.peer)
+
+#
+#   ModbusClientController
+#
+
+@bacpypes_debugging
+class ModbusClientController(SieveClientController):
+
+    def __init__(self, connect_timeout=None, idle_timeout=None):
+        if _debug: ModbusClientController._debug("__init__")
+        SieveClientController.__init__(self)
+
+        # create and bind to a client which is already bound to a director
+        self.client = ModbusClient(connect_timeout=connect_timeout, idle_timeout=idle_timeout)
+        bind(self, self.client)
+
+        # create an application service element referencing this controller and
+        # bound to the TCPClientDirector
+        self.client_ase = ModbusClientASE(self)
+        bind(self.client_ase, self.client.director)
+
+    def abort(self, address, err):
+        if _debug: ModbusClientController._debug("abort %r %r", address, err)
+
+        # look up the queue
+        queue = self.queues.get(address, None)
+        if not queue:
+            if _debug: ModbusClientController._debug("no queue for %r" % (source_address,))
+            return
+        if _debug: ModbusClientController._debug("    - queue: %r", queue)
+
+        # if it has an active iocb, abort it
+        if queue.active_iocb:
+            if _debug: ModbusClientController._debug("    - active_iocb: %r", queue.active_iocb)
+            iocb = queue.active_iocb
+
+            # change the state
+            iocb.ioState = ABORTED
+            iocb.ioError = err
+
+            # notify the client
+            iocb.trigger()
+
+        # abort the rest in the queue
+        while True:
+            iocb = queue.ioQueue.get(block=0)
+            if not iocb:
+                break
+            if _debug: IOQController._debug("    - iocb: %r", iocb)
+
+            # change the state
+            iocb.ioState = ABORTED
+            iocb.ioError = err
+
+            # notify the client
+            iocb.trigger()
+
+        if (self.state != CTRL_IDLE):
+            if _debug: IOQController._debug("    - busy after aborts")
+
+        # if the queue is empty and idle, forget about the controller
+        if not queue.ioQueue.queue and not queue.active_iocb:
+            if _debug: SieveClientController._debug("    - queue is empty")
+            del self.queues[source_address]
 
 #
 #   ModbusServer

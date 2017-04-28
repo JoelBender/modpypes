@@ -9,6 +9,7 @@ This executable module is a console application for generating
 read and write MODBUS PDUs.
 """
 
+import os
 import math
 
 from bacpypes.debugging import bacpypes_debugging, ModuleLogger
@@ -16,8 +17,8 @@ from bacpypes.consolecmd import ConsoleCmd
 from bacpypes.consolelogging import ArgumentParser
 
 from bacpypes.comm import Client, bind
-from bacpypes.core import run
-from bacpypes.iocb import IOCB, SieveClientController
+from bacpypes.core import run, deferred
+from bacpypes.iocb import IOCB
 
 from .pdu import ExceptionResponse, \
     ReadCoilsRequest, ReadCoilsResponse, \
@@ -27,11 +28,15 @@ from .pdu import ExceptionResponse, \
     WriteSingleCoilRequest, WriteSingleCoilResponse, \
     WriteSingleRegisterRequest, WriteSingleRegisterResponse, \
     ModbusStruct
-from .app import ModbusClient
+from .app import ModbusClientController
 
 # some debugging
 _debug = 0
 _log = ModuleLogger(globals())
+
+# settings
+CONNECT_TIMEOUT = int(os.getenv('CONNECT_TIMEOUT', 0)) or None
+IDLE_TIMEOUT = int(os.getenv('IDLE_TIMEOUT', 0)) or None
 
 #
 #   ConsoleClient
@@ -135,15 +140,15 @@ class ConsoleClient(ConsoleCmd):
         iocb = IOCB(req)
         if _debug: ConsoleClient._debug("    - iocb: %r", iocb)
 
-        # submit the request
-        self.controller.request_io(iocb)
+        # submit the request via the main thread
+        deferred(self.controller.request_io, iocb)
 
         # wait for the response
         iocb.wait()
 
         # exceptions
         if iocb.ioError:
-            print(iocb.ioError)
+            print("error: %r" % (iocb.ioError,))
             return
 
         # extract the response
@@ -260,15 +265,15 @@ class ConsoleClient(ConsoleCmd):
         iocb = IOCB(req)
         if _debug: ConsoleClient._debug("    - iocb: %r", iocb)
 
-        # submit the request
-        self.controller.request_io(iocb)
+        # submit the request via the main thread
+        deferred(self.controller.request_io, iocb)
 
         # wait for the response
         iocb.wait()
 
         # exceptions
         if iocb.ioError:
-            print(iocb.ioError)
+            print("error: %r" % (iocb.ioError,))
             return
 
         # extract the response
@@ -293,6 +298,18 @@ def main():
     # parse the command line arguments
     parser = ArgumentParser(description=__doc__)
 
+    # connection timeout paramters
+    parser.add_argument(
+        "--connect-timeout", nargs='?', type=int,
+        help="idle connection timeout",
+        default=CONNECT_TIMEOUT,
+        )
+    parser.add_argument(
+        "--idle-timeout", nargs='?', type=int,
+        help="idle connection timeout",
+        default=IDLE_TIMEOUT,
+        )
+
     # now parse the arguments
     args = parser.parse_args()
 
@@ -300,13 +317,13 @@ def main():
     if _debug: _log.debug("    - args: %r", args)
 
     # make a controller
-    this_controller = SieveClientController()
+    this_controller = ModbusClientController(
+        connect_timeout=args.connect_timeout,
+        idle_timeout=args.idle_timeout,
+        )
     if _debug: _log.debug("    - this_controller: %r", this_controller)
 
-    # local IO functions
-    bind(this_controller, ModbusClient())
-
-    # if this is being run, then a console is handy
+    # make a console
     this_console = ConsoleClient(this_controller)
     if _debug: _log.debug("    - this_console: %r", this_console)
 
