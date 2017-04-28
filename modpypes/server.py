@@ -29,6 +29,7 @@ _commlog = logging.getLogger(__name__ + "._commlog")
 # settings
 SERVER_HOST = os.getenv("SERVER_HOST", "")
 SERVER_PORT = int(os.getenv("SERVER_PORT", 502))
+IDLE_TIMEOUT = int(os.getenv('IDLE_TIMEOUT', 0)) or None
 
 #
 #   SimpleServer
@@ -203,6 +204,8 @@ class SimpleServer(Client):
 def main():
     # parse the command line arguments
     parser = ArgumentParser(description=__doc__)
+
+    # listener arguments
     parser.add_argument(
         "--host", type=str,
         help="address of host (default {!r})".format(SERVER_HOST),
@@ -213,13 +216,21 @@ def main():
         help="server port (default {!r})".format(SERVER_PORT),
         default=SERVER_PORT,
         )
+
+    # connection timeout arguments
+    parser.add_argument(
+        "--idle-timeout", nargs='?', type=int,
+        help="idle connection timeout",
+        default=IDLE_TIMEOUT,
+        )
+
     args = parser.parse_args()
 
     if _debug: _log.debug("initialization")
     if _debug: _log.debug("    - args: %r", args)
 
     # local IO functions
-    bind(SimpleServer(), ModbusServer(port=args.port))
+    bind(SimpleServer(), ModbusServer(port=args.port, idle_timeout=args.idle_timeout))
 
     _log.debug("running")
 
