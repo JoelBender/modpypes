@@ -89,6 +89,14 @@ class Byte(_Struct):
     def pack(self, value):
         if _debug: Byte._debug("pack %r", value)
 
+        # convert the value if necessary
+        if not isinstance(value, int):
+            try:
+                value = int(value)
+            except TypeError:
+                Byte._error("coercion error: %r not an int", value)
+            value = 0
+
         return [value & 0xFF]
 
     def unpack(self, registers):
@@ -107,6 +115,14 @@ class Int(_Struct):
 
     def pack(self, value):
         if _debug: Int._debug("pack %r", value)
+
+        # convert the value if necessary
+        if not isinstance(value, int):
+            try:
+                value = int(value)
+            except TypeError:
+                Int._error("coercion error: %r not an int", value)
+            value = 0
 
         return [value & 0xFFFF]
 
@@ -131,7 +147,15 @@ class UnsignedInt(_Struct):
     def pack(self, value):
         if _debug: UnsignedInt._debug("pack %r", value)
 
-        return [value & 0xFF]
+        # convert the value if necessary
+        if not isinstance(value, int):
+            try:
+                value = int(value)
+            except TypeError:
+                UnsignedInt._error("coercion error: %r not an int", value)
+            value = 0
+
+        return [value & 0xFFFF]
 
     def unpack(self, registers):
         if _debug: UnsignedInt._debug("unpack %r", registers)
@@ -149,6 +173,14 @@ class DoubleInt(_Struct):
 
     def pack(self, value):
         if _debug: DoubleInt._debug("pack %r", value)
+
+        # convert the value if necessary
+        if not isinstance(value, int):
+            try:
+                value = int(value)
+            except TypeError:
+                DoubleInt._error("coercion error: %r not an int", value)
+            value = 0
 
         return [(value >> 16) & 0xFFFF, value & 0xFFFF]
 
@@ -173,6 +205,14 @@ class UnsignedDoubleInt(_Struct):
     def pack(self, value):
         if _debug: UnsignedDoubleInt._debug("pack %r", value)
 
+        # convert the value if necessary
+        if not isinstance(value, int):
+            try:
+                value = int(value)
+            except TypeError:
+                UnsignedDoubleInt._error("coercion error: %r not an int", value)
+            value = 0
+
         return [(value >> 16) & 0xFFFF, value & 0xFFFF]
 
     def unpack(self, registers):
@@ -188,9 +228,12 @@ class Real(_Struct):
     def pack(self, value):
         if _debug: Real._debug("pack %r", value)
 
-        # make sure it's a float
+        # convert the value if necessary
         if not isinstance(value, float):
-            if _debug: Real._error("packing error: %r is not a float", value)
+            try:
+                value = float(value)
+            except TypeError:
+                BigEndianReal._error("coercion error: %r not a float", value)
             value = 0.0
 
         registers = struct.unpack(">HH", struct.pack(">f", value))
@@ -209,6 +252,15 @@ class ROCReal(_Struct):
 
     def pack(self, value):
         if _debug: ROCReal._debug("pack %r", value)
+
+        # convert the value if necessary
+        if not isinstance(value, float):
+            try:
+                value = float(value)
+            except TypeError:
+                BigEndianReal._error("coercion error: %r not a float", value)
+            value = 0.0
+
         raise NotImplementedError("packing ROCReal is not supported")
 
     def unpack(self, registers):
@@ -234,6 +286,14 @@ class BigEndianDoubleInt(_Struct):
     def pack(self, value):
         if _debug: BigEndianDoubleInt._debug("pack %r", value)
 
+        # convert the value if necessary
+        if not isinstance(value, int):
+            try:
+                value = int(value)
+            except TypeError:
+                BigEndianDoubleInt._error("coercion error: %r not an int", value)
+            value = 0
+
         return [value & 0xFFFF, (value >> 16) & 0xFFFF]
 
     def unpack(self, registers):
@@ -257,6 +317,14 @@ class BigEndianUnsignedDoubleInt(_Struct):
     def pack(self, value):
         if _debug: BigEndianUnsignedDoubleInt._debug("pack %r", value)
 
+        # convert the value if necessary
+        if not isinstance(value, int):
+            try:
+                value = int(value)
+            except TypeError:
+                BigEndianUnsignedDoubleInt._error("coercion error: %r not an int", value)
+            value = 0
+
         return [value & 0xFFFF, (value >> 16) & 0xFFFF]
 
     def unpack(self, registers):
@@ -272,9 +340,12 @@ class BigEndianReal(_Struct):
     def pack(self, value):
         if _debug: BigEndianReal._debug("pack %r", value)
 
-        # make sure it's a float
+        # convert the value if necessary
         if not isinstance(value, float):
-            BigEndianReal._error("packing error: %r is not a float", value)
+            try:
+                value = float(value)
+            except TypeError:
+                BigEndianReal._error("coercion error: %r not a float", value)
             value = 0.0
 
         registers = struct.unpack(">HH", struct.pack(">f", value))
