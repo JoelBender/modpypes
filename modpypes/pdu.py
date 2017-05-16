@@ -95,7 +95,7 @@ class Byte(_Struct):
                 value = int(value)
             except TypeError:
                 Byte._error("coercion error: %r not an int", value)
-            value = 0
+                value = 0
 
         return [value & 0xFF]
 
@@ -122,7 +122,7 @@ class Int(_Struct):
                 value = int(value)
             except TypeError:
                 Int._error("coercion error: %r not an int", value)
-            value = 0
+                value = 0
 
         return [value & 0xFFFF]
 
@@ -153,7 +153,7 @@ class UnsignedInt(_Struct):
                 value = int(value)
             except TypeError:
                 UnsignedInt._error("coercion error: %r not an int", value)
-            value = 0
+                value = 0
 
         return [value & 0xFFFF]
 
@@ -180,7 +180,7 @@ class DoubleInt(_Struct):
                 value = int(value)
             except TypeError:
                 DoubleInt._error("coercion error: %r not an int", value)
-            value = 0
+                value = 0
 
         return [(value >> 16) & 0xFFFF, value & 0xFFFF]
 
@@ -211,7 +211,7 @@ class UnsignedDoubleInt(_Struct):
                 value = int(value)
             except TypeError:
                 UnsignedDoubleInt._error("coercion error: %r not an int", value)
-            value = 0
+                value = 0
 
         return [(value >> 16) & 0xFFFF, value & 0xFFFF]
 
@@ -234,7 +234,7 @@ class Real(_Struct):
                 value = float(value)
             except TypeError:
                 BigEndianReal._error("coercion error: %r not a float", value)
-            value = 0.0
+                value = 0.0
 
         registers = struct.unpack(">HH", struct.pack(">f", value))
         return [registers[1], registers[0]]
@@ -258,8 +258,8 @@ class ROCReal(_Struct):
             try:
                 value = float(value)
             except TypeError:
-                BigEndianReal._error("coercion error: %r not a float", value)
-            value = 0.0
+                ROCReal._error("coercion error: %r not a float", value)
+                value = 0.0
 
         raise NotImplementedError("packing ROCReal is not supported")
 
@@ -292,7 +292,7 @@ class BigEndianDoubleInt(_Struct):
                 value = int(value)
             except TypeError:
                 BigEndianDoubleInt._error("coercion error: %r not an int", value)
-            value = 0
+                value = 0
 
         return [value & 0xFFFF, (value >> 16) & 0xFFFF]
 
@@ -323,7 +323,7 @@ class BigEndianUnsignedDoubleInt(_Struct):
                 value = int(value)
             except TypeError:
                 BigEndianUnsignedDoubleInt._error("coercion error: %r not an int", value)
-            value = 0
+                value = 0
 
         return [value & 0xFFFF, (value >> 16) & 0xFFFF]
 
@@ -346,7 +346,7 @@ class BigEndianReal(_Struct):
                 value = float(value)
             except TypeError:
                 BigEndianReal._error("coercion error: %r not a float", value)
-            value = 0.0
+                value = 0.0
 
         registers = struct.unpack(">HH", struct.pack(">f", value))
         return [registers[0], registers[1]]
