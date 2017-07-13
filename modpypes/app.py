@@ -236,12 +236,9 @@ class ModbusClientController(SieveClientController):
             # notify the client
             iocb.trigger()
 
-        if (self.state != CTRL_IDLE):
-            if _debug: ModbusClientController._debug("    - busy after aborts")
-
         # if the queue is empty and idle, forget about the controller
         if not queue.ioQueue.queue and not queue.active_iocb:
-            if _debug: SieveClientController._debug("    - queue is empty")
+            if _debug: ModbusClientController._debug("    - queue is empty")
             del self.queues[address]
 
 #
