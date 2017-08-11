@@ -86,6 +86,7 @@ class SimpleServer(Client):
         # match the transaction information
         resp.pduDestination = req.pduSource
         resp.mpduTransactionID = req.mpduTransactionID
+        resp.mpduUnitID = req.mpduUnitID
         _commlog.debug("<<< %r %r", resp.pduDestination, resp)
 
         # send the response back
