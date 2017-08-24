@@ -196,7 +196,7 @@ class SimpleServer(Client):
 
         self.pull_registers(req.address, req.count)
 
-        return ReadMultipleRegistersResponse(self.registers[req.address:req.address+req.count])
+        return ReadInputRegistersResponse(self.registers[req.address:req.address+req.count])
 
 #
 #   main
